@@ -28,121 +28,80 @@ function draw() {
       rect(x,y,30,30);
     }
   }
-
-
-  O = new pieza(
-    //Coordenadas de la pieza
-    1,1,
-    //Tamaño de la pieza (ancho-largo)
-    2,2,
-    //Representación de la pieza
-    [[1,1],
-    [1,1]],
-    //
-    color(210, 206, 70)
-    );
-
-  I = new pieza(
-    //Coordenadas de la pieza
-    1,5,
-    //Tamaño de la pieza (ancho-largo)
-    4,4,
-    //Representación de la pieza
-    [[1,1,1,1],
-    [0,0,0,0],
-    [0,0,0,0],
-    [0,0,0,0]],
-    //
-    color(51, 204, 255)
-    );
-
-  J = new pieza(
-    //Coordenadas de la pieza
-    3,4,
-    //Tamaño de la pieza (ancho-largo)
-    3,3,
-    //Representación de la pieza
-    [[1,1,0],
-    [1,0,0],
-    [1,0,0]],
-    //
-    color(0, 0, 204)
-    );
-
-  L = new pieza(
-    //Coordenadas de la pieza
-    3,6,
-    //Tamaño de la pieza (ancho-largo)
-    3,3,
-    //Representación de la pieza
-    [[0,1,1],
-    [0,0,1],
-    [0,0,1]],
-    //
-    color(255, 153, 51)
-    );
-
-  S = new pieza(
-    //Coordenadas de la pieza
-    6,1,
-    //Tamaño de la pieza (ancho-largo)
-    3,3,
-    //Representación de la pieza
-    [[0,0,0],
-    [0,1,1],
-    [1,1,0]],
-    //
-    color(0, 204, 0)
-    );
-
-  T = new pieza(
-      //Coordenadas de la pieza
-      6,5,
-      //Tamaño de la pieza (ancho-largo)
-      3,3,
-      //Representación de la pieza
-      [[0,0,0],
-      [0,1,0],
-      [1,1,1]],
-      //
-      color(204, 0, 204)
-      );
-
-  Z = new pieza(
-    //Coordenadas de la pieza
-    9,1,
-    //Tamaño de la pieza (ancho-largo)
-    3,3,
-    //Representación de la pieza
-    [[0,0,0],
-    [1,1,0],
-    [0,1,1]],
-    //
-    color(255, 0, 0)
-    );
-
-    O.dibujar();
-    I.dibujar();
-    J.dibujar();
-    L.dibujar();
-    S.dibujar();
-    T.dibujar();
-    Z.dibujar();
-
+  
+  p1 = new pieza(1,1,1);
+  p1.dibujar();
+  
 }
 
 class pieza{
-  constructor(y,x,f,c,forma,color){
+  constructor(y,x,ref){
+
     this.x=x;
     this.y=y;
-    this.f=f;
-    this.c=c;
-    //Nombres de las piezas
-    this.forma=forma;
-    this.color=color;
+    this.rot=0;
+
+    //Nombres de las piezas - O I J L S T Z
+    //Equivalente en números  1 2 3 4 5 6 7
+  
+    if (ref==1){
+      this.f=2;this.c=2;this.color=color(210, 206, 70);
+      this.forma= 
+      [ [1,1],
+        [1,1]]; 
+    }
+
+    if (ref==2){
+      this.f=4;this.c=4;this.color=color(51, 204, 255); 
+      this.forma=
+      [ [0,0,0,0],
+        [1,1,1,1],
+        [0,0,0,0],
+        [0,0,0,0]];
+    }
+
+    if (ref==3){
+      this.f=3;this.c=3;this.color=color(0, 0, 204);
+      this.forma=
+      [ [1,0,0],
+        [1,1,1],
+        [0,0,0]];
+    }
+
+    if (ref==4){
+      this.f=3;this.c=3;this.color=color(255, 153, 51); 
+      this.forma=
+      [ [0,0,1],
+        [1,1,1],
+        [0,0,0]];  
+    }
+
+    if (ref==5){
+      this.f=3;this.c=3;this.color=color(0, 204, 0);
+      this.forma=
+      [ [0,1,1],
+        [1,1,0],
+        [0,0,0]];
+    }
+
+    if (ref==6){
+      this.f=3;this.c=3;this.color=color(204, 0, 204);
+      this.forma=
+      [ [0,1,0],
+        [1,1,1],
+        [0,0,0]];
+    }
+
+    if (ref==7){
+      this.f=3;this.c=3;this.color=color(255, 0, 0);
+      this.forma=
+      [ [1,1,0],
+        [0,1,1],
+        [0,0,0]];
+    }
+  
   }
 
-  
 
   dibujar(){
     for (var i=0;i<this.f;i++){
