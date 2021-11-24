@@ -4,17 +4,18 @@ let filas = 12;
 let columnas = 18;
 let colores = [];
 let tablero = [];
+let siguiente = [];
 let juego = [];
 
 //Config de la ventana
-let ancho = 400;
+let ancho = 430;
 let largo = 500;
 let fondo=('tomato');
 
 //Tamaño de las fichas
 let tamcuadrado=25;
 //Centrar el playfield
-let ajustex=(ancho-((filas)*tamcuadrado))/2;
+let ajustex=(ancho-((filas)*tamcuadrado))/2+(2.5*tamcuadrado);
 let ajustey=(largo-((columnas)*tamcuadrado))/2;
 
 //Clase
@@ -25,8 +26,8 @@ class pieza{
     this.x=x;
     this.y=y;
     this.rot=0;
+    this.estado=estado; //1- Queue 2-Playing
     this.velocidad=vel;
-    this.estado=estado; // 1-Queue 2-inplay 3-Out of play 
     this.ref=ref;
     this.tiempoquieto=0; //Contador de el tiempo que la pieza ha estado quieta
     this.limquieto=lim; //Limite de tiempo que la pieza puede estar quieta
@@ -394,10 +395,18 @@ class pieza{
     }
   }
   estadojuego(){
-    if(this.tiempoquieto<this.limquieto){
+    if(this.estado==1){
+      for (let i=0;i<this.tam;i++){
+        for (let j=0;j<this.tam;j++){
+          if (this._forma[i][j]==1){
+            siguiente[j][i]=this.color;
+          }
+        }
+      }
+    }
+    else if(this.tiempoquieto<this.limquieto && this.estado==2){
       this.dibujar();
       this.bajar();
-    
       this.moverderizq();
       this.rotar();
     }else{
@@ -420,6 +429,14 @@ function setup() {
       colores[i].push(255);
     }
   }
+  //Crear tablero de piezas en queue
+  for (let i=0;i<4;i++){
+    siguiente[i]=[];
+    for (let j=0;j<2;j++){
+      siguiente[i].push(255);
+    }
+  }
+
   //Crear tablero de referencia
   for (let i=0;i<filas;i++){
     tablero[i]=[];
@@ -434,11 +451,12 @@ function setup() {
     }
   }
   tablero[5][12]=0;
-  ///Inicializar objetos
-  //X,Y,IDPIEZA,ESTADO,VELOCIDAD
   //Juego [0] -> Pieza en hold
   //Juego [1] -> Pieza activa
-  p1 = new pieza(1,1,6,2,0.05,3);
+  p1 = new pieza(1,1,1,1,0.05,3);
+  p2 = new pieza(1,1,2,2,0.05,3);
+  juego.push(p1);
+  juego.push(p2);
 
 }
 
@@ -452,19 +470,21 @@ function draw() {
     }
   }
 
-  //Dibujar las piezas activas
-  print(p1.estadojuego());
-  //Imprimir tablero - No imprimir los bordes, son referencia
-  
-  /*
-  imprimir bordes (4 testing): 
-  for (let i=0;i<filas;i++){
-    for (let j=0;j<columnas;j++){
-  no imprimir bordes: 
-  for (let i=1;i<filas-1;i++){
-    for (let j=0;j<columnas-1;j++){
-  */
+  //Dibujar las piezas 
+  juego[0].estadojuego();
+  juego[1].estadojuego();
 
+  //Imprimir casillas de pieza siguiente
+  for (let i=0;i<4;i++){
+    for (let j=0;j<2;j++){
+      let x = (ajustex-(4*tamcuadrado))+i*tamcuadrado;
+      let y = (ajustey+(2*tamcuadrado))+j*tamcuadrado;
+      stroke(100);
+      fill(siguiente[i][j]);
+      rect(x,y,tamcuadrado,tamcuadrado);
+    }
+  } 
+  //Imprimir tablero - No imprimir los bordes, son referencia
   for (let i=1;i<filas-1;i++){
     for (let j=0;j<columnas-1;j++){
       let x = ajustex+i*tamcuadrado;
@@ -477,5 +497,10 @@ function draw() {
 }
 
 function crearpieza(){
+  //X,Y,IDPIEZA,VELOCIDAD,TIEMPO LIMITE
+}
+
+function plasmar(datos){
+  /*datos = [false,int(this.x),int(this.y),this.tam,this.estadorot(this.rot,"r")]*/
 
 }
