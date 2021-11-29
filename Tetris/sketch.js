@@ -1,14 +1,24 @@
 
 //Variables globales
-let filas = 12;
-let columnas = 18;
+let filas = 12; //El playfield visible es de filas-2 y columnas-3
+let columnas = 20;
+
+//Control del tablero
 let colores = [];
 let tablero = [];
+//Tablero sig ficha
 let siguiente = [];
+//Tablero ficha en hold
+let hold =[];
+//Arreglo fichas en play
 let juego = [];
+//Variable donde es guardado el puntaje
+let puntaje=0;
+let velinicial=0.05;
+let tlinicial=4;
 
 //Config de la ventana
-let ancho = 430;
+let ancho = 450;
 let largo = 500;
 let fondo=('tomato');
 
@@ -16,17 +26,19 @@ let fondo=('tomato');
 let tamcuadrado=25;
 //Centrar el playfield
 let ajustex=(ancho-((filas)*tamcuadrado))/2+(2.5*tamcuadrado);
-let ajustey=(largo-((columnas)*tamcuadrado))/2;
+let ajustey=((largo-((columnas)*tamcuadrado))/2)+(0.8*tamcuadrado);
+
+//Tamaño letra
+let tamletra=tamcuadrado*0.7;
 
 //Clase
 class pieza{
-
-  constructor(x,y,ref,estado,vel,lim){
+  constructor(x,y,ref,estado,rot,vel,lim){
 
     this.x=x;
     this.y=y;
-    this.rot=0;
-    this.estado=estado; //1- Queue 2-Playing
+    this.rot=rot;
+    this.estado=estado; //1- Queue 2-Playing 3-Hold 4-Fuera
     this.velocidad=vel;
     this.ref=ref;
     this.tiempoquieto=0; //Contador de el tiempo que la pieza ha estado quieta
@@ -85,7 +97,6 @@ class pieza{
     }
 
   }
-
   dibujar(){
     for (let i=0;i<this.tam;i++){
       for (let j=0;j<this.tam;j++){
@@ -368,7 +379,7 @@ class pieza{
   rotar(){
     let comp=0; 
     //rotar derecha
-    if (keyIsDown(88)){
+    if (keyIsDown(88/*Tecla X*/)){
       if(int(this.rot)==3){
         comp=0;
       }else{
@@ -379,7 +390,7 @@ class pieza{
       }
     }
     //rotar izquierda
-    if (keyIsDown(90)){
+    if (keyIsDown(90/*Tecla Z*/)){
       if(int(this.rot)==0){
         comp=3;
       }else{
@@ -396,9 +407,10 @@ class pieza{
   }
   estadojuego(){
     if(this.estado==1){
+      let holder=this.estadorot(0,"r");
       for (let i=0;i<this.tam;i++){
         for (let j=0;j<this.tam;j++){
-          if (this._forma[i][j]==1){
+          if (holder[i][j]==1){
             siguiente[j][i]=this.color;
           }
         }
@@ -409,12 +421,11 @@ class pieza{
       this.bajar();
       this.moverderizq();
       this.rotar();
-    }else{
-      return [false,int(this.x),int(this.y),this.tam,this.estadorot(this.rot,"r")];
     }
-    return [true,null,null,null,null];
-  }
+    else if(this.estado==3){
 
+    }
+  }
 }
 
 //Setup
@@ -422,6 +433,7 @@ function setup() {
   //Inicializar ventana
   createCanvas(ancho,largo);
   background(fondo);
+  frameRate(30);
   //Crear tablero a imprimir
   for (let i=0;i<filas;i++){
     colores[i]=[];
@@ -434,6 +446,13 @@ function setup() {
     siguiente[i]=[];
     for (let j=0;j<2;j++){
       siguiente[i].push(255);
+    }
+  }
+  //Crear tablero de piezas en hold
+  for (let i=0;i<4;i++){
+    hold[i]=[];
+    for (let j=0;j<2;j++){
+      hold[i].push(255);
     }
   }
 
@@ -450,11 +469,12 @@ function setup() {
       }
     }
   }
+  //Inicializar juego
   tablero[5][12]=0;
   //Juego [0] -> Pieza en hold
   //Juego [1] -> Pieza activa
-  p1 = new pieza(1,1,1,1,0.05,3);
-  p2 = new pieza(1,1,2,2,0.05,3);
+  p1 = crearpieza(2,velinicial,tlinicial);
+  p2 = crearpieza(1,velinicial,tlinicial);
   juego.push(p1);
   juego.push(p2);
 
@@ -462,6 +482,27 @@ function setup() {
 
 //Main
 function draw() {
+  
+  textSize(tamletra*1.5);
+  fill(color(255, 0, 0));
+  text('T', (ajustex-(3.9*tamcuadrado)), (ajustey+(tamcuadrado)));
+  fill(color(255, 153, 51));
+  text('E', (ajustex-(3.2*tamcuadrado)), (ajustey+(tamcuadrado)));
+  fill(color(210, 206, 70));
+  text('T', (ajustex-(2.5*tamcuadrado)), (ajustey+(tamcuadrado)));
+  fill(color(0, 204, 0));
+  text('R', (ajustex-(1.8*tamcuadrado)), (ajustey+(tamcuadrado)));
+  fill(color(51, 204, 255));
+  text('I', (ajustex-(1*tamcuadrado)), (ajustey+(tamcuadrado)));
+  fill(color(204, 0, 204));
+  text('S', (ajustex-(0.7*tamcuadrado)), (ajustey+(tamcuadrado)));
+
+  textSize(tamletra);
+  fill(0);
+  text('Siguiente', (ajustex-(3.4*tamcuadrado)), (ajustey+(2.8*tamcuadrado)));
+  text('Hold', (ajustex-(2.7*tamcuadrado)), (ajustey+(6.8*tamcuadrado)));
+  text('Puntaje', (ajustex-(3.1*tamcuadrado)), (ajustey+(10.8*tamcuadrado)));
+  text(puntaje, (ajustex-(2.1*tamcuadrado)), (ajustey+(11.8*tamcuadrado)));
 
   //Resetear el tablero de las piezas que aún no son fijas
   for (let i=0;i<filas;i++){
@@ -478,17 +519,29 @@ function draw() {
   for (let i=0;i<4;i++){
     for (let j=0;j<2;j++){
       let x = (ajustex-(4*tamcuadrado))+i*tamcuadrado;
-      let y = (ajustey+(2*tamcuadrado))+j*tamcuadrado;
+      let y = (ajustey+(3*tamcuadrado))+j*tamcuadrado;
       stroke(100);
       fill(siguiente[i][j]);
       rect(x,y,tamcuadrado,tamcuadrado);
     }
   } 
+
+  //Imprimir casillas de pieza en hold
+  for (let i=0;i<4;i++){
+    for (let j=0;j<2;j++){
+      let x = (ajustex-(4*tamcuadrado))+i*tamcuadrado;
+      let y = (ajustey+(7*tamcuadrado))+j*tamcuadrado;
+      stroke(100);
+      fill(hold[i][j]);
+      rect(x,y,tamcuadrado,tamcuadrado);
+    }
+  } 
+
   //Imprimir tablero - No imprimir los bordes, son referencia
   for (let i=1;i<filas-1;i++){
-    for (let j=0;j<columnas-1;j++){
+    for (let j=2;j<columnas-1;j++){
       let x = ajustex+i*tamcuadrado;
-      let y = ajustey+j*tamcuadrado;
+      let y = (ajustey+j*tamcuadrado)-(tamcuadrado);
       stroke(100);
       fill(colores[i][j]);
       rect(x,y,tamcuadrado,tamcuadrado);
@@ -496,8 +549,14 @@ function draw() {
   } 
 }
 
-function crearpieza(){
-  //X,Y,IDPIEZA,VELOCIDAD,TIEMPO LIMITE
+function crearpieza(est,vel,tl){
+  //x,y,ref,estado,rot,vel,lim
+  let x=int(random(1,filas-4));
+  let y=0;
+  let idpieza=int(random(1,8));
+  let rot=int(random(0,5));
+  obj= new pieza(x,y,idpieza,est,rot,vel,tl);
+  return obj;
 }
 
 function plasmar(datos){
