@@ -9,15 +9,15 @@ let tablero = [];
 let siguiente = [];
 let hold =[];
 //Variables de juego
-let pactiva;
-let psigte;
-let phold;
-let puntaje=1;
-let ratvel=0.05;
-let ratlim=4;
-let lineavacia=[];
-let game=true;
-let thold=1;
+let pactiva; //
+let psigte;  //  Control de las piezas en juego
+let phold;   //
+let puntaje=1; //Puntaje
+let ratvel=0.05;  //Velocidad inicial (cambiable con slider - menu personalizacion)
+let ratlim=4;     //Limite en pantalla inicial (cambiable con slider - menu personalizacion)
+let game=true;    //Control del gameover
+let thold=1;      //Indica si el hold esta disponible o no
+let filallena=[];  //Indice de la fila que ya este llena 
 
 //Config de la ventana
 let ancho = 450;
@@ -115,20 +115,20 @@ class pieza{
     }
   }
   bajar(){
-    if (this.colision("abj")){
+    if (this.colision("abj")){ //Gravedad
       this.y=this.y+this.velocidad;
     }else{
       this.tiempoquieto+=this.velocidad;
     }
-    if (keyIsDown(DOWN_ARROW)){
+    if (keyIsDown(DOWN_ARROW)){ //Input del usuario
       if(this.colision("abj")){
-        this.y=this.y+this.velocidad*1.2;
+        this.y=this.y+this.velocidad*2.2;
       }
     }
-    if (keyIsDown("32")){
+    if (keyIsDown("32")){ //Bajar de golpe
       if (this.colision("abj")){
         if (this.velocidad<1){
-          this.velocidad+=this.velocidad;  
+          this.velocidad+=this.velocidad*0.5;  
         }else{
           this.velocidad=1;
         }      
@@ -452,8 +452,8 @@ class pieza{
     else if(cond && this.estado==2){
       
       //Contador que permite visualizar cuando la ficha se fija
-      if(this.tiempoquieto>this.limquieto*0.9 && this.tiempoquieto<this.limquieto*0.99){  
-        this.color=color(150,255/2);
+      if(this.tiempoquieto>this.limquieto*0.89 && this.tiempoquieto<this.limquieto*0.9){  
+        this.color=color(150);
       }else{
         this.color=this.coltemp;
       }
@@ -532,15 +532,6 @@ function setup() {
       hold[i].push(255);
     }
   }
-  //crear linea vacia de referencia
-  for (let i=0;i<filas;i++){
-    if(i==0 || i==filas-1){
-      lineavacia.push(0);
-    }
-    else{
-      lineavacia.push(255);
-    }
-  }
   //Crear tablero de referencia
   for (let i=0;i<filas;i++){
     tablero[i]=[];
@@ -567,6 +558,7 @@ function draw() {
   background(fondo);
   //Ajustar el ratio de velocidad y limite de duración respecto al puntaje
 
+  //Imprimir el tetris con colores
   textSize(tamletra*1.5);
   fill(color(255, 0, 0));
   text('T', (ajustex-(3.9*tamcuadrado)), (ajustey+(tamcuadrado)));
@@ -581,6 +573,7 @@ function draw() {
   fill(color(204, 0, 204));
   text('S', (ajustex-(0.7*tamcuadrado)), (ajustey+(tamcuadrado)));
 
+  //Imprimir elementos de la GUI
   textSize(tamletra);
   fill(0);
   text('Siguiente', (ajustex-(3.4*tamcuadrado)), (ajustey+(2.8*tamcuadrado)));
@@ -588,12 +581,14 @@ function draw() {
   text('Puntaje', (ajustex-(3.1*tamcuadrado)), (ajustey+(10.8*tamcuadrado)));
   text(puntaje-1, (ajustex-(2.1*tamcuadrado)), (ajustey+(11.8*tamcuadrado)));
 
+
   //Resetear el tableros de las piezas que aún no son fijas
   for (let i=0;i<filas;i++){
     for (let j=0;j<columnas;j++){
       colores[i][j]=tablero[i][j];
     }
   }
+
   //Resetear hold y siguiente
   for (let i=0;i<4;i++){
     for (let j=0;j<2;j++){
@@ -604,6 +599,8 @@ function draw() {
 
   //Dibujar las piezas 
   if(game){
+
+    //Control de las piezas automatico.
     let cambio=pactiva.estadojuego();
     psigte.estadojuego();
     phold.estadojuego();
@@ -630,7 +627,6 @@ function draw() {
         phold.y=0;
         pactiva.estado=2;
       }
-      
     }
   
     //verificar si se ha perdido
@@ -638,23 +634,69 @@ function draw() {
       if(tablero[i][1]!=255){
         game=false;
         break;
-      }
+      } 
     }
-    //verificar si hay alguna línea completa
+    //verificar si hay alguna línea completa, anotar su posicion
     for (let i=2;i<columnas-1;i++){
       let linea=true;
-      for (let j=1;j<filas-1;j++){
+      for (let j=3;j<filas-1;j++){
         if(tablero[j][i]==255){
           linea=false;
-          break;
         }
       }
-      if(linea){
-        puntaje+=1;
-      }
+      if(linea==true){ 
+        //añadir el indice de la linea llena al arreglo
+        filallena.push(i);
+      } 
     } 
+    //recorrer la lista de filas llenas, eliminarlas
+    //luego al inicio, añadir una fila nueva.
+
+    //cantidad de lineas llenas
+    for (let i=0;i<filallena.length;i++){
+
+      //eliminar la linea llena (la conocemos por su indice)
+      for(let j=0;j<filas;j++){   
+        tablero[j].splice(filallena[i],1); 
+      } 
+
+      //añadir la fila nueva al inicio para hacer el corrimiento
+      for (let j=0;j<filas;j++){  
+        if(j==0 || j==filas-1){
+          tablero[j].splice(0,0,0);
+        }
+        else{
+          tablero[j].splice(0,0,255);
+        }
+      } 
+    }
+    //Sistema de puntuacion, conforme a la cantidad de lineas
+    //completadas con una sola ficha, asignar mas puntos y
+    //eliminar los indices de las lineas llenas (ya no existen)  
+    switch(filallena.length){
+      default:
+      case(0):
+        break;
+      case(1):
+        puntaje+=100; 
+        filallena.splice(0,1); 
+        break;
+      case(2):
+        puntaje+=250; 
+        filallena.splice(0,2); 
+        break;
+      case(3):
+        puntaje+=500; 
+        filallena.splice(0,3); 
+        break;
+      case(4):
+        puntaje+=1000; 
+        filallena.splice(0,4); 
+        break;
+    }
+
   }
-  if(game==false){
+  if(game==false){ //Efecto game over
     for (let i=1;i<filas-1;i++){
       for (let j=0;j<columnas-1;j++){
         if(tablero[i][j]!=255){
@@ -663,7 +705,6 @@ function draw() {
       }
     } 
   }
-  
   
   //Imprimir casillas de pieza siguiente
   for (let i=0;i<4;i++){
@@ -675,7 +716,6 @@ function draw() {
       rect(x,y,tamcuadrado,tamcuadrado);
     }
   } 
-
   //Imprimir casillas de pieza en hold
   for (let i=0;i<4;i++){
     for (let j=0;j<2;j++){
@@ -686,7 +726,7 @@ function draw() {
       rect(x,y,tamcuadrado,tamcuadrado);
     }
   } 
-
+  
   //Imprimir tablero - No imprimir los bordes, son referencia
   for (let i=1;i<filas-1;i++){
     for (let j=2;j<columnas-1;j++){
@@ -697,7 +737,7 @@ function draw() {
       rect(x,y,tamcuadrado,tamcuadrado);
     }
   } 
-
+  
 }
 
 function crearpieza(est,vel,tl){
